@@ -255,3 +255,29 @@ $$
 We choose $t_{min} = 0.5 ms$ and $t_{max} = 2.5 ms$ for the full range.
 
 So basically, we're blending between $0.5 \times 10^{-3} \times 50 = 0.025$ and $1.5 \times 10^{-3} \times 50 = 0.125$ in terms of duty cycle.
+
+# Timers
+
+So the issue with using the `HardwareTimer` API is that it does have some mechanisms for specifying the PWM signal using parameters such as frequency and duty cycle. The issue is that it rounds off our duty cycle parameter to the nearest integer percentage, which isn't good.
+
+So what we're going to do is reinvent some sort of wheel, and build a PWM abstraction layer similar to the ledc hardware on the ESP32 chip, although we won't manually specify the PWM's resolution, rather, given a duty cycle, we will maximize our resolution every time.
+
+I'll just write it in `pwm.h`, and i'll just call it `pwmAttach` to configure the frequency and `pwmWrite` to set the duty cycle.
+
+Essentially, timers on the STM32 (and probably similarly for the Arduino) works as follows:
+
+> [!NOTE]
+> We're assuming that we're assuming that we're using PWM1 mode
+
+- we have a base clock that runs at a fixed frequency $f_b$
+- we have a prescale value which is an integer, that just basically says, after this many ticks of the base clock, increment the counter. We'll call this $p$, and on the STM32 $p = PSC + 1$
+- we then have the counter overflow value, which in our case, we'll call $q$, which says, how many values do you want some counter to increment, until it overflows. In the STM32, this is $q = ARR + 1$. This determines the frequency of our PWM signal
+
+So at this stage, we essentially have a counter that counts like: 0, 1, 2,..., q - 1, 0, 1, ..., q - 1. To get a PWM signal, we want to specify the duty cycle, which just says every period, what's the "on period percentage"?
+
+- To get this, we essentially require a cutoff count $c$, such that $d = \frac{c}{q}$, an perhaps tweaked a bit depending on what we're actually doing. It's probably the case that for $\leq c$, it should go high, and $\geq c$, it should go low. On the stm32, $c = CCR$?
+
+> [!NOTE]
+> on the STM32, some pins uses the same timers, and each pin would then have a seperate channel, meaning that they use the same ARR, but different CCR. That's to say, they have the same frequency, but can have different duty cycles.
+
+Also, it seems like we can't just arbitrarily set the prescale value to 1, because, if we want low frequency, then the ARR register might overflow, as such, it's best to set the prescale value to something lower. So more degrees of freedom you have to deal with...
