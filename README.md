@@ -281,3 +281,15 @@ So at this stage, we essentially have a counter that counts like: 0, 1, 2,..., q
 > on the STM32, some pins uses the same timers, and each pin would then have a seperate channel, meaning that they use the same ARR, but different CCR. That's to say, they have the same frequency, but can have different duty cycles.
 
 Also, it seems like we can't just arbitrarily set the prescale value to 1, because, if we want low frequency, then the ARR register might overflow, as such, it's best to set the prescale value to something lower. So more degrees of freedom you have to deal with...
+
+# Pin definitions
+
+For convenience, I will just connect PA0, PA1, PA2, ..., PA7 to the output of the 8 way IR sensor.
+
+The IR pin can be connected to like PB0. And the 5V and ground will be connected respectively.
+
+I'll also need to place some sort of 5V regulator, or maybe just a simple external 3.3V battery or something is probably fine. Or maybe an external powerbank for now, although, it would be best if we used a 5V regulator to one battery.
+
+I guess we can use PB1 or something for PWM also, although, PB0 and PB1 would be using the same timer. This is fine though, because, since we can vary the duty cycle, this is fine.
+
+As for controlling the motor directions, I guess we can use PB3, PB4, PB6, and PB7. And I guess that's it. We can still access PB10 and PB11 for the Serial3 port.
