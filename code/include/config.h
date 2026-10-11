@@ -1,0 +1,22 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
+#include "variant_PILL_F103Cx.h"
+#include <Arduino.h>
+#include <stdint.h>
+
+typedef struct {
+  uint8_t in1;
+  uint8_t in2;
+} MotorPins;
+
+#define MOTOR_AMOUNT 2
+
+const MotorPins motorPins[MOTOR_AMOUNT] = {{PB3, PB4}, {PB6, PB7}};
+
+#define IR_SENSOR_AMOUNT 8
+
+const uint8_t irSensorPins[IR_SENSOR_AMOUNT] = {PA0, PA1, PA2, PA3,
+                                                PA4, PA5, PA6, PA7};
+
+#endif
